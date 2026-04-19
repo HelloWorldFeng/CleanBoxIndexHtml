@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CleanBox - Cleaner App for Android</title>
+  <meta name="description" content="CleanBox helps you clean cache junk, inspect running processes, check battery status, and find large files quickly on Android." />
+  <meta name="theme-color" content="#0d6ddf" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #eef5ff;
+      --bg-soft: #f8fbff;
+      --ink: #0f2139;
+      --ink-muted: #56708f;
+      --brand: #0d6ddf;
+      --brand-2: #12b8c8;
+      --accent: #ff9f43;
+      --line: #d7e4f4;
+      --card: #ffffff;
+      --shadow: 0 16px 40px rgba(13, 56, 102, 0.13);
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(18, 184, 200, 0.23), transparent 36%),
+        radial-gradient(circle at 88% 16%, rgba(13, 109, 223, 0.22), transparent 32%),
+        linear-gradient(180deg, var(--bg) 0%, #ffffff 44%, var(--bg-soft) 100%);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(13, 109, 223, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(13, 109, 223, 0.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at center, black 52%, transparent 92%);
+      z-index: -2;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(var(--max), calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.84);
+      border-bottom: 1px solid rgba(215, 228, 244, 0.9);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-family: "Sora", sans-serif;
+      font-weight: 700;
+      background: linear-gradient(140deg, var(--brand), var(--brand-2));
+      box-shadow: 0 8px 20px rgba(13, 109, 223, 0.33);
+    }
+
+    .brand-name {
+      font-family: "Sora", sans-serif;
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    nav a {
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: var(--ink-muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: 180ms ease;
+    }
+
+    nav a:hover {
+      color: var(--ink);
+      background: rgba(13, 109, 223, 0.1);
+    }
+
+    .hero {
+      padding: 76px 0 58px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(18, 184, 200, 0.35);
+      background: rgba(255, 255, 255, 0.75);
+      color: #0d6179;
+      font-size: 0.84rem;
+      font-weight: 800;
+      padding: 8px 14px;
+    }
+
+    .hero h1 {
+      margin: 18px 0 16px;
+      font-family: "Sora", sans-serif;
+      font-size: clamp(1.95rem, 3.3vw, 3.4rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 56ch;
+      color: var(--ink-muted);
+      line-height: 1.72;
+      font-size: 1.01rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0 18px;
+      transition: 180ms ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      color: #ffffff;
+      background: linear-gradient(140deg, var(--brand), #2e91ff);
+      box-shadow: 0 12px 26px rgba(13, 109, 223, 0.34);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(13, 109, 223, 0.4);
+    }
+
+    .btn-ghost {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.82);
+      border-color: var(--line);
+    }
+
+    .btn-ghost:hover {
+      background: #ffffff;
+      border-color: #bfd5ed;
+    }
+
+    .phone-panel {
+      position: relative;
+      border-radius: 34px;
+      border: 1px solid rgba(13, 109, 223, 0.25);
+      padding: 18px;
+      background: linear-gradient(180deg, #fbfeff, #eff6ff);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .phone-panel::after {
+      content: "";
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 159, 67, 0.36), transparent 62%);
+      top: -90px;
+      right: -70px;
+      z-index: -1;
+    }
+
+    .phone {
+      border-radius: 24px;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid #dbe9f9;
+    }
+
+    .status-dial {
+      border-radius: 20px;
+      padding: 24px 14px;
+      text-align: center;
+      color: #ffffff;
+      background: radial-gradient(circle at 45% 30%, #4f8cff 0%, #0d6ddf 72%);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    }
+
+    .status-dial small {
+      display: block;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      opacity: 0.82;
+    }
+
+    .status-dial strong {
+      display: block;
+      margin-top: 7px;
+      font-family: "Sora", sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mini-card {
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #d8e6f6;
+      background: #f8fbff;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .mini-card strong {
+      display: block;
+      font-family: "Sora", sans-serif;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+    }
+
+    section {
+      scroll-margin-top: 90px;
+    }
+
+    .section {
+      margin-top: 34px;
+      padding: 40px 0;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-family: "Sora", sans-serif;
+      font-size: clamp(1.35rem, 2.1vw, 2rem);
+      letter-spacing: -0.01em;
+    }
+
+    .section-intro {
+      margin-top: 10px;
+      color: var(--ink-muted);
+      max-width: 72ch;
+      line-height: 1.7;
+    }
+
+    .feature-grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .feature {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: 0 10px 24px rgba(30, 70, 115, 0.08);
+      padding: 18px;
+      transition: 200ms ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 28px rgba(30, 70, 115, 0.14);
+    }
+
+    .feature h3 {
+      margin: 0 0 8px;
+      font-size: 1.04rem;
+      font-family: "Sora", sans-serif;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--ink-muted);
+      line-height: 1.64;
+      font-size: 0.94rem;
+    }
+
+    .steps {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .step {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      padding: 18px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+    }
+
+    .step span {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(13, 109, 223, 0.12);
+      color: var(--brand);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .step h3 {
+      margin: 10px 0 8px;
+      font-size: 1rem;
+      font-family: "Sora", sans-serif;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--ink-muted);
+      line-height: 1.62;
+      font-size: 0.92rem;
+    }
+
+    .privacy {
+      margin-top: 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid #cde1f7;
+      background: linear-gradient(180deg, #f8fbff, #ffffff);
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .privacy .item {
+      border-radius: 12px;
+      border: 1px solid #d9e8f8;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 14px;
+    }
+
+    .privacy h3 {
+      margin: 0 0 6px;
+      font-size: 0.98rem;
+      font-family: "Sora", sans-serif;
+    }
+
+    .privacy p {
+      margin: 0;
+      color: var(--ink-muted);
+      line-height: 1.58;
+      font-size: 0.9rem;
+    }
+
+    .download-panel {
+      margin-top: 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid #d0e3f8;
+      background: linear-gradient(145deg, #ffffff 0%, #ecf6ff 100%);
+      padding: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .download-panel p {
+      margin: 8px 0 0;
+      color: var(--ink-muted);
+    }
+
+    footer {
+      margin-top: 46px;
+      border-top: 1px solid var(--line);
+      padding: 24px 0 34px;
+      color: #577191;
+      font-size: 0.9rem;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 22px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+    }
+
+    .footer-links a {
+      color: #1f4f86;
+      font-weight: 700;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fade-up 700ms ease forwards;
+    }
+
+    .delay-1 { animation-delay: 100ms; }
+    .delay-2 { animation-delay: 220ms; }
+    .delay-3 { animation-delay: 340ms; }
+    .delay-4 { animation-delay: 460ms; }
+
+    .float {
+      animation: drift 8s ease-in-out infinite;
+    }
+
+    @keyframes fade-up {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @media (max-width: 960px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .phone-panel {
+        max-width: 520px;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      nav {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 48px;
+      }
+
+      .feature-grid,
+      .privacy {
+        grid-template-columns: 1fr;
+      }
+
+      .download-panel {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a href="#" class="brand" aria-label="CleanBox home">
+        <div class="logo">C</div>
+        <div class="brand-name">CleanBox</div>
+      </a>
+      <nav aria-label="Main">
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#download">Download</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" id="top">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow reveal">Android Cleanup Companion</div>
+          <h1 class="reveal delay-1">CleanBox keeps your phone tidy, fast, and easy to manage.</h1>
+          <p class="reveal delay-2">
+            Clean cache junk, review running processes, inspect battery status, and locate oversized files in one clear workflow.
+            Built for quick action without confusing menus.
+          </p>
+          <div class="cta-row reveal delay-3">
+            <a class="btn btn-primary" href="https://play.google.com/store/apps/details?id=com.tool.good.cleanbox" target="_blank" rel="noopener noreferrer">
+              Get it on Google Play
+            </a>
+            <a class="btn btn-ghost" href="#features">See Features</a>
+          </div>
+        </div>
+        <div class="phone-panel float reveal delay-4" aria-hidden="true">
+          <div class="phone">
+            <div class="status-dial">
+              <small>DEVICE STATUS</small>
+              <strong>86%</strong>
+            </div>
+            <div class="mini-grid">
+              <div class="mini-card">
+                <strong>Junk</strong>
+                Cache cleaner
+              </div>
+              <div class="mini-card">
+                <strong>Process</strong>
+                Running apps
+              </div>
+              <div class="mini-card">
+                <strong>Battery</strong>
+                Health snapshot
+              </div>
+              <div class="mini-card">
+                <strong>Big Files</strong>
+                Heavy storage use
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <h2 class="reveal">Core Features</h2>
+      <p class="section-intro reveal delay-1">
+        CleanBox focuses on practical maintenance tasks that users need every week, not one-time gimmicks.
+      </p>
+      <div class="feature-grid">
+        <article class="feature reveal delay-1">
+          <h3>Junk Cleaner</h3>
+          <p>Scan and remove temporary cache files to recover space and keep app storage under control.</p>
+        </article>
+        <article class="feature reveal delay-2">
+          <h3>Process Overview</h3>
+          <p>View currently running apps so you can spot background activity and improve day-to-day responsiveness.</p>
+        </article>
+        <article class="feature reveal delay-3">
+          <h3>Battery Status</h3>
+          <p>Check battery condition quickly from the same dashboard before heavy cleaning or long usage periods.</p>
+        </article>
+        <article class="feature reveal delay-4">
+          <h3>Big File Finder</h3>
+          <p>Locate storage-heavy files fast, then decide what to keep or delete with more confidence.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="how">
+      <h2 class="reveal">How It Works</h2>
+      <p class="section-intro reveal delay-1">
+        Open the app, run a quick scan, and take action in a guided order. CleanBox keeps the flow short and focused.
+      </p>
+      <div class="steps">
+        <article class="step reveal delay-1">
+          <span>1</span>
+          <h3>Scan</h3>
+          <p>Start from the home dashboard to review storage and device status in seconds.</p>
+        </article>
+        <article class="step reveal delay-2">
+          <span>2</span>
+          <h3>Review</h3>
+          <p>Check junk, running apps, battery, and large files with dedicated screens.</p>
+        </article>
+        <article class="step reveal delay-3">
+          <span>3</span>
+          <h3>Clean</h3>
+          <p>Confirm and clean selected items, then track your result immediately.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="privacy">
+      <h2 class="reveal">Privacy & Permissions</h2>
+      <p class="section-intro reveal delay-1">
+        CleanBox requests storage-related permissions only to perform device cleanup features that users explicitly run.
+      </p>
+      <div class="privacy">
+        <article class="item reveal delay-2">
+          <h3>On-device processing</h3>
+          <p>File scanning and cleanup operations are performed on your device during normal app usage.</p>
+        </article>
+        <article class="item reveal delay-3">
+          <h3>User-controlled actions</h3>
+          <p>Cleanup actions happen only after your interaction and confirmation inside the app flow.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="download">
+      <div class="download-panel reveal">
+        <div>
+          <h2>Download CleanBox</h2>
+          <p>Install from Google Play and keep your Android storage clean every day.</p>
+        </div>
+        <div class="cta-row" style="margin-top: 0;">
+          <a class="btn btn-primary" href="https://play.google.com/store/apps/details?id=com.tool.good.cleanbox" target="_blank" rel="noopener noreferrer">
+            Download Now
+          </a>
+          <a class="btn btn-ghost" href="mailto:onanaclarissa@gmail.com">Contact Support</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-row">
+      <div>© <span id="year">2026</span> CleanBox</div>
+      <div class="footer-links">
+        <a href="mailto:onanaclarissa@gmail.com">Support</a>
+        <a href="https://sites.google.com/view/clean-box-privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        <a href="https://docs.google.com/document/" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+  </script>
+</body>
+</html>
